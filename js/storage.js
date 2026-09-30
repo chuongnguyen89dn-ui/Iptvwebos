@@ -1,0 +1,1 @@
+(function(g){var K='iptvwebos.v1';function load(){try{return JSON.parse(localStorage.getItem(K))||{sources:[],favorites:[],playCache:{}}}catch(e){return{sources:[],favorites:[],playCache:{}}}}function save(s){localStorage.setItem(K,JSON.stringify(s))}g.Store={load:load,save:save};})(window);
