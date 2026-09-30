@@ -9,3 +9,19 @@ jobs:
         with:
           node-version: 20
       - run: npm run check
+      - run: cd backend && npm install && npm test
+      - run: docker build -t iptvwebos-backend ./backend
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install webOS CLI
+        run: npm install -g @webos-tools/cli
+      - name: Package webOS app
+        run: |
+          mkdir -p dist
+          ares-package . --outdir dist --no-minify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iptvwebos-ipk
+          path: dist/*.ipk
