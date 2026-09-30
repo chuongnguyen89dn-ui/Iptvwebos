@@ -20,3 +20,7 @@ The last two stages are backend hooks and are only used when direct playback can
 
 ## Development
 Open `index.html` in a browser for UI development. The packaged TV app uses only ES5-compatible JavaScript for the webOS 4.x baseline.
+
+
+## Validation
+Every push runs JavaScript syntax checks and an M3U parser smoke test in GitHub Actions.
