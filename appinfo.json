@@ -1,0 +1,12 @@
+{
+  "id": "com.chuong.iptvwebos",
+  "version": "0.1.0",
+  "vendor": "chuongnguyen89dn-ui",
+  "type": "web",
+  "main": "index.html",
+  "title": "IPTV webOS",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "requiredMemory": 64,
+  "disableBackHistoryAPI": true
+}
