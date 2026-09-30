@@ -19,8 +19,20 @@ jobs:
         run: npm install -g @webos-tools/cli
       - name: Package webOS app
         run: |
-          mkdir -p dist
-          ares-package . --outdir dist --no-minify
+          rm -rf tv-package dist && mkdir -p tv-package/js tv-package/css dist
+          cp appinfo.json index.html tv-package/
+          cp js/*.js tv-package/js/
+          cp css/*.css tv-package/css/
+          python3 - <<'PY'
+          import struct,zlib
+          w=h=80
+          raw=b''.join(b'\\x00'+bytes([10,22,39,255])*w for _ in range(h))
+          def ch(t,d):
+              return struct.pack('>I',len(d))+t+d+struct.pack('>I',zlib.crc32(t+d)&0xffffffff)
+          png=b'\\x89PNG\\r\\n\\x1a\\n'+ch(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+ch(b'IDAT',zlib.compress(raw))+ch(b'IEND',b'')
+          open('tv-package/icon.png','wb').write(png)
+          PY
+          ares-package tv-package --outdir dist --no-minify
       - uses: actions/upload-artifact@v4
         with:
           name: iptvwebos-ipk
