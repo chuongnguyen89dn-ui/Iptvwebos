@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install webOS CLI
-        run: npm install -g @webos-tools/cli
+        run: npm install -g @webos-tools/cli@3.2.6
       - name: Package webOS app
         run: |
           rm -rf tv-package dist && mkdir -p tv-package/js tv-package/css dist
