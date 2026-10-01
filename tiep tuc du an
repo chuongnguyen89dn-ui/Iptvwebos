@@ -1,0 +1,14 @@
+TIEP TUC DU AN — IPTV WEBOS
+
+CAP NHAT 2026-10-02
+- Repo: chuongnguyen89dn-ui/Iptvwebos.
+- Muc tieu: IPTV player cho LG webOS TV 4.x+, remote-first 10-foot UI, nhieu M3U/M3U8 source, merged channel view, favorites, search.
+- Baseline webOS 4.x dung Chromium 53; JS dong goi TV phai ES5-compatible.
+- Playback policy: DIRECT -> RESOLVE -> MSE/NATIVE -> REMUX -> TRANSCODE; hai buoc cuoi la backend hooks cho stream kho.
+- MVP shell hien gom source manager, M3U parser, merged channel browser, remote navigation va direct HTML5 playback.
+- Moi push co syntax check JavaScript va M3U parser smoke test trong GitHub Actions.
+- Render hien co 2 service cho cung repo, duoc coi la 1 du an: Iptvwebos (Docker, free) va iptvwebos-fallback (Node, free). Khong ghi hai service nay thanh hai du an.
+- URL Render da ghi nhan: https://iptvwebos.onrender.com va https://iptvwebos-fallback.onrender.com.
+- Yeu cau tiep tuc: hoan thien luong build/package IPK va kiem tra runtime that; khong coi fallback service la san pham rieng.
+- Moi thay doi code/build/deploy phai duoc kiem tra status va runtime log truoc khi ket luan.
+- Day la handoff dau tien; append ve sau, khong lap lai.
