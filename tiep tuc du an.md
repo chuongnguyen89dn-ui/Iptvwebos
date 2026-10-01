@@ -93,3 +93,9 @@
 
 ## Trạng thái hiện tại
 Backend Docker + FFmpeg đã được dựng và các bài kiểm thử FFmpeg/HLS/remux/transcode đã có kết quả thực tế. Frontend vẫn cần tích hợp fallback chain và cần test endpoint production/client thật trước khi phát hành IPK cuối cùng.
+
+## 2026-10-01 — Build IPK lần này
+- Đã xác nhận frontend hiện có: nhiều M3U source, Direct playback mặc định và fallback chain DIRECT → RESOLVE → REMUX → TRANSCODE khi người dùng cấu hình private backend.
+- Đã xác nhận repo đã có GitHub Actions workflow đóng gói webOS bằng @webos-tools/cli / ares-package.
+- Build này nâng app version từ 0.1.0 lên 0.1.1 để tạo package release riêng, đồng thời pin CLI packaging ở 3.2.6.
+- Mục tiêu build: tạo artifact .ipk thật, kiểm tra workflow/package status và chỉ báo hoàn thành khi artifact được xác nhận.
