@@ -10,7 +10,7 @@ jobs:
           node-version: 20
       - run: npm run check
       - run: cd backend && npm install && npm test
-      - run: docker build -t iptvwebos-backend ./backend
+      - run: docker build -t iptvwebos-backend -f backend/Dockerfile .
   package:
     runs-on: ubuntu-latest
     steps:
