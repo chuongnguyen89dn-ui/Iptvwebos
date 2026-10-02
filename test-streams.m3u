@@ -1,0 +1,9 @@
+#EXTM3U
+#EXTINF:-1 group-title="PLAYER TEST",HLS - Apple BipBop
+https://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8
+#EXTINF:-1 group-title="PLAYER TEST",DASH - DASH-IF Envivio
+https://dash.akamaized.net/envivio/EnvivioDash3/manifest.mpd
+#EXTINF:-1 group-title="PLAYER TEST",DASH - DASH-IF Big Buck Bunny
+https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd
+#EXTINF:-1 group-title="PLAYER TEST",DASH - Cloudflare Sample
+https://customer-f33zs165nr7gyfy4.cloudflarestream.com/6b9e68b07dfee8cc2d116e4c51d6a957/manifest/video.mpd
