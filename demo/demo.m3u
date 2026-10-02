@@ -1,0 +1,5 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="apple-bipbop" group-title="Demo",Apple HLS Bip Bop
+https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8
+#EXTINF:-1 tvg-id="apple-bipbop-legacy" group-title="Demo",Apple HLS Bip Bop Legacy
+http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8
