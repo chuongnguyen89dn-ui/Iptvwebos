@@ -1,31 +1,14 @@
 (function(g){
-function Player(video,state){this.video=video;this.state=state;this.timer=null;this.trace=[];this.attempt=0}
-Player.prototype.log=function(s){this.trace.push(s);if(this.trace.length>7)this.trace.shift();this.onState(this.trace.join(' > '))};
+function Player(video,state){this.video=video;this.state=state;this.timer=null;this.trace=[];this.attempt=0;this.hls=null;this.resolver=new StreamResolver({endpoint:(state.settings&&state.settings.backend)||''})}
+Player.prototype.log=function(s){this.trace.push(s);if(this.trace.length>8)this.trace.shift();this.onState(this.trace.join(' > '))};
 Player.prototype.mediaError=function(){var e=this.video.error;if(!e)return'unknown';return'code '+e.code+(e.message?' '+e.message:'')};
-Player.prototype.play=function(ch){var self=this,v=this.video,start=Date.now();this.attempt++;var attempt=this.attempt;clearTimeout(this.timer);this.trace=[];this.log('NATIVE opening');
-var events=['loadstart','loadedmetadata','loadeddata','canplay','playing','waiting','stalled','error'];
-function clean(){clearTimeout(self.timer);events.forEach(function(n){v.removeEventListener(n,handlers[n])})}
-function fail(reason){if(attempt!==self.attempt)return;clean();self.log('NATIVE FAIL '+reason+' '+(Date.now()-start)+'ms')}
-var handlers={
-loadstart:function(){self.log('NATIVE loadstart')},
-loadedmetadata:function(){self.log('NATIVE metadata')},
-loadeddata:function(){self.log('NATIVE data')},
-canplay:function(){self.log('NATIVE canplay')},
-playing:function(){if(attempt!==self.attempt)return;clean();self.log('NATIVE PLAY '+(Date.now()-start)+'ms')},
-waiting:function(){self.log('NATIVE waiting')},
-stalled:function(){self.log('NATIVE stalled')},
-error:function(){fail(self.mediaError())}
-};
-events.forEach(function(n){v.addEventListener(n,handlers[n])});
-try{
-v.preload='auto';v.controls=true;v.autoplay=true;v.setAttribute('playsinline','');
-/* Do not pause/remove-src/load before assigning a new URL. On webOS this can race the media pipeline and surface DEMUXER_ERROR_COULD_NOT_OPEN. */
-v.src=ch.url;
-var p=v.play();if(p&&p.catch)p.catch(function(e){if(attempt===self.attempt)self.log('NATIVE play() '+(e&&e.name?e.name:'reject'))});
-}catch(e){fail('exception '+e.message);return}
-this.timer=setTimeout(function(){if(attempt===self.attempt)fail('timeout')},20000)
-};
-Player.prototype.stop=function(){this.attempt++;clearTimeout(this.timer);try{this.video.pause()}catch(e){}};
+Player.prototype.isHls=function(url){return /\.m3u8(?:$|[?#])/i.test(url||'')};
+Player.prototype.play=function(ch){this.stop();this.trace=[];this.attempt++;var a=this.attempt;if(this.isHls(ch.url))return this.tryMse(ch,ch.url,a,false);this.tryNative(ch,ch.url,a)};
+Player.prototype.tryMse=function(ch,url,attempt,isFallback){var self=this,v=this.video,start=Date.now();if(attempt!==this.attempt)return;if(!g.MediaSource){this.log('MSE unavailable');return this.tryNative(ch,url,attempt)}if(!g.Hls||!g.Hls.isSupported||!g.Hls.isSupported()){this.log('HLS.JS unsupported');return this.tryNative(ch,url,attempt)}this.log((isFallback?'MSE FALLBACK':'MSE')+' opening');
+try{this.hls=new g.Hls({enableWorker:false,lowLatencyMode:false,backBufferLength:30,maxBufferLength:20,maxMaxBufferLength:40,manifestLoadingTimeOut:15000,levelLoadingTimeOut:15000,fragLoadingTimeOut:20000});var h=this.hls;h.on(g.Hls.Events.MEDIA_ATTACHED,function(){if(attempt!==self.attempt)return;self.log('MSE attached');h.loadSource(url)});h.on(g.Hls.Events.MANIFEST_PARSED,function(ev,data){if(attempt!==self.attempt)return;self.log('MSE manifest '+((data&&data.levels&&data.levels.length)||0)+' levels');var p=v.play();if(p&&p.catch)p.catch(function(e){self.log('MSE play() '+(e&&e.name||'reject'))})});h.on(g.Hls.Events.ERROR,function(ev,data){if(attempt!==self.attempt)return;self.log('MSE '+(data&&data.type||'error')+' '+(data&&data.details||''));if(data&&data.fatal){try{h.destroy()}catch(e){}self.hls=null;if(!isFallback&&self.resolver.endpoint)return self.tryBackend(ch,attempt);self.tryNative(ch,url,attempt)}});v.onplaying=function(){if(attempt===self.attempt)self.log('MSE PLAY '+(Date.now()-start)+'ms')};h.attachMedia(v);this.timer=setTimeout(function(){if(attempt!==self.attempt)return;self.log('MSE timeout');try{h.destroy()}catch(e){}self.hls=null;if(!isFallback&&self.resolver.endpoint)self.tryBackend(ch,attempt);else self.tryNative(ch,url,attempt)},30000)}catch(e){this.log('MSE exception '+e.message);this.tryNative(ch,url,attempt)}};
+Player.prototype.tryBackend=function(ch,attempt){var self=this,u=this.resolver.fallbackUrl(ch,'transcode');if(!u)return this.tryNative(ch,ch.url,attempt);this.log('BACKEND HLS');this.tryMse(ch,u,attempt,true)};
+Player.prototype.tryNative=function(ch,url,attempt){var self=this,v=this.video,start=Date.now();if(attempt!==this.attempt)return;clearTimeout(this.timer);this.log('NATIVE opening');try{v.onplaying=function(){if(attempt===self.attempt)self.log('NATIVE PLAY '+(Date.now()-start)+'ms')};v.onerror=function(){if(attempt===self.attempt)self.log('NATIVE FAIL '+self.mediaError())};v.src=url;var p=v.play();if(p&&p.catch)p.catch(function(e){if(attempt===self.attempt)self.log('NATIVE play() '+(e&&e.name||'reject'))})}catch(e){this.log('NATIVE exception '+e.message)}};
+Player.prototype.stop=function(){this.attempt++;clearTimeout(this.timer);if(this.hls){try{this.hls.destroy()}catch(e){}this.hls=null}try{this.video.onplaying=null;this.video.onerror=null;this.video.pause();this.video.removeAttribute('src');this.video.load()}catch(e){}};
 Player.prototype.onState=function(t){var el=document.getElementById('playState');if(el)el.textContent=t};
 g.IPTVPlayer=Player;
 })(window);
